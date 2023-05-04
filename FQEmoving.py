@@ -2,10 +2,10 @@ import os
 import pandas as pd
 
 # Define the directory containing the Excel files
-dir_path = 'Extracted Excels/'
+dir_path = 'Final_Extracted_Excels/'
 
 # Create an empty dataframe to store the results
-df_output = pd.DataFrame(columns=['Sr_no', 'capex_total_y1', 'capex_total_y2','capex_total_y3','opex_total_y1','opex_total_y2','opex_total_y3'])
+df_output = pd.DataFrame(columns=['Sr_no', 'f1_exp_count', 'f3_exp_count', 'f2_exp_count'])
 
 # Loop through each file in the directory
 for filename in sorted(os.listdir(dir_path)):
@@ -15,26 +15,25 @@ for filename in sorted(os.listdir(dir_path)):
 
         try:
             # Read the Excel file into a pandas dataframe
-            df = pd.read_excel(file_path, sheet_name= 'Financial Resources Utilised A')
+            
+            df2 = pd.read_excel(file_path, sheet_name='Faculty Details')
 
-            capex_total_y1 = df.iloc[4:7, 1].replace('-', 0).astype(float).sum()
-            capex_total_y2 = df.iloc[4:7, 2].replace('-', 0).astype(float).sum()
-            capex_total_y3 = df.iloc[4:7, 3].replace('-', 0).astype(float).sum()
-            opex_total_y1 = df.iloc[11:13, 1].replace('-', 0).astype(float).sum()
-            opex_total_y2 = df.iloc[11:13, 2].replace('-', 0).astype(float).sum()
-            opex_total_y3 = df.iloc[11:13, 3].replace('-', 0).astype(float).sum()
-            # sum_b = df.iloc[3:7, 1].sum()
-            # total_sanc_intake_y2 = df.iloc[:, 2].replace('-', 0).astype(float).sum()
-            # total_sanc_intake_y3 = df.iloc[:, 3].replace('-', 0).astype(float).sum()
-            # total_sanc_intake_y4 = df.iloc[:, 4].replace('-', 0).astype(float).sum()
+            # Count the number of rows that meet each condition using value_counts function
+            f1_exp_count = len(df2.loc[df2.iloc[:,6] <= 96])
+            f2_exp_count = len(df2.loc[(df2.iloc[:,6] > 96) & (df2.iloc[:,6] <= 180)])
+            f3_exp_count = len(df2.loc[df2.iloc[:,6] > 180])
 
-            # Add a new row with the patent_grant and patent_published values, along with the file's serial number
             sr_no = int(filename.split('.')[0])
-            df_output = df_output.append({'Sr_no': sr_no, 'capex_total_y1': capex_total_y1,'capex_total_y2': capex_total_y2,'capex_total_y3': capex_total_y3,'opex_total_y1': opex_total_y1,'opex_total_y2': opex_total_y2,'opex_total_y3': opex_total_y3}, ignore_index=True)
-        except ValueError:
-            print(f"Skipping file {filename}: Worksheet not found.")
+            df_output = df_output.append({'Sr_no': sr_no, 'f1_exp_count': f1_exp_count, 'f2_exp_count': f2_exp_count, 'f3_exp_count': f3_exp_count}, ignore_index=True)
 
-# Save the dataframe as an Excel file named "IPR.xlsx"
-df_output.to_excel('FRU.xlsx', index=False)
+        except IndexError:
+            print(f"Skipping file {filename}: Index out of bounds in accessing column 7 of the dataframe.")
+            continue
+
+        except ValueError:
+            print(f"Skipping file {filename}: Worksheet named 'Sanctioned (Approved) Intake' not found.")
+
+# Save the dataframe as an Excel file named "FQE.xlsx"
+df_output.to_excel('FQE.xlsx', index=False)
 
 print("File saved successfully!")
